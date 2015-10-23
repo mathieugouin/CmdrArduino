@@ -1,24 +1,24 @@
-#ifndef __DCCCOMMANDSTATION_H__
-#define __DCCCOMMANDSTATION_H__
+#ifndef __DCCPACKETSCHEDULER_H__
+#define __DCCPACKETSCHEDULER_H__
+
 #include "DCCPacket.h"
 #include "DCCPacketQueue.h"
 
-
-#define E_STOP_QUEUE_SIZE           2
-#define HIGH_PRIORITY_QUEUE_SIZE    10
-#define LOW_PRIORITY_QUEUE_SIZE     10
-#define REPEAT_QUEUE_SIZE           10
+#define E_STOP_QUEUE_SIZE             2
+#define HIGH_PRIORITY_QUEUE_SIZE      10
+#define LOW_PRIORITY_QUEUE_SIZE       10
+#define REPEAT_QUEUE_SIZE             10
 //#define PERIODIC_REFRESH_QUEUE_SIZE 10
 
-#define LOW_PRIORITY_INTERVAL     5
-#define REPEAT_INTERVAL           11
-#define PERIODIC_REFRESH_INTERVAL 23
+#define LOW_PRIORITY_INTERVAL         5
+#define REPEAT_INTERVAL               11
+#define PERIODIC_REFRESH_INTERVAL     23
 
-#define SPEED_REPEAT      3
-#define FUNCTION_REPEAT   3
-#define E_STOP_REPEAT     5
-#define OPS_MODE_PROGRAMMING_REPEAT 3
-#define OTHER_REPEAT      2
+#define SPEED_REPEAT                  3
+#define FUNCTION_REPEAT               3
+#define E_STOP_REPEAT                 10
+#define OPS_MODE_PROGRAMMING_REPEAT   3
+#define OTHER_REPEAT                  2
 
 class DCCPacketScheduler
 {
@@ -32,7 +32,7 @@ class DCCPacketScheduler
     
     //for enqueueing packets
     bool setSpeed(uint16_t address, uint8_t address_kind, int8_t new_speed, uint8_t steps = 0); //new_speed: [-127,127]
-    bool setSpeed14(uint16_t address, uint8_t address_kind, int8_t new_speed, bool F0=true); //new_speed: [-13,13], and optionally F0 settings.
+    bool setSpeed14(uint16_t address, uint8_t address_kind, int8_t new_speed /*, bool F0 = true*/); //new_speed: [-13,13], and optionally F0 settings.
     bool setSpeed28(uint16_t address, uint8_t address_kind, int8_t new_speed); //new_speed: [-28,28]
     bool setSpeed128(uint16_t address, uint8_t address_kind, int8_t new_speed); //new_speed: [-127,127]
     
@@ -57,7 +57,7 @@ class DCCPacketScheduler
     //to be called periodically within loop()
     void update(void); //checks queues, puts whatever's pending on the rails via global current_packet. easy-peasy
 
-  //private:
+  private:
   
   //  void stashAddress(DCCPacket *p); //remember the address to compare with the next packet
     void repeatPacket(DCCPacket *p); //insert into the appropriate repeat queue
@@ -81,4 +81,4 @@ class DCCPacketScheduler
 
 //DCCPacketScheduler packet_scheduler;
 
-#endif //__DCC_COMMANDSTATION_H__
+#endif //__DCCPACKETSCHEDULER_H__

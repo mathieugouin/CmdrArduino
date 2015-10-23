@@ -44,8 +44,8 @@ void loop() {
 
   //handle reading throttle
   analog_value = analogRead(0);
-  speed_byte = (analog_value >> 2)-127; //divide by two to take a 0-1023 range number and make it 0-127 range.
-  if(speed_byte != old_speed)
+  speed_byte = (analog_value >> 2) - 128 ; // Convert from [0, 1023] range to [-128, 127]
+  if (speed_byte != old_speed)
   {
     dps.setSpeed128(3,DCC_SHORT_ADDRESS, speed_byte);
     old_speed = speed_byte;

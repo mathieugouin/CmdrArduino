@@ -1,14 +1,13 @@
 #ifndef __DCCHARDWARE_H__
 #define __DCCHARDWARE_H__
 
-
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 void setup_DCC_waveform_generator(void);
-void DCC_waveform_generation_hasshin(void);
+void DCC_waveform_generation_hasshin(void); // TBD What the name?
 
 #ifdef __cplusplus
 }

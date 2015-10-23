@@ -7,42 +7,40 @@
  * A FIFO queue for holding DCC packets, implemented as a circular buffer.
  * Copyright 2010 D.E. Goodman-Wilson
  * TODO
-**/
+ **/
 
 #include "DCCPacket.h"
 
 class DCCPacketQueue
 {
-  public: //protected:
+  protected:
     DCCPacket *queue;
-    byte read_pos;
-    byte write_pos;
-    byte size;
-    byte written; //how many cells have valid data? used for determining full status.  
+    uint8_t read_pos;
+    uint8_t write_pos;
+    uint8_t size;
+    uint8_t written; //how many cells have valid data? used for determining full status.  
+  
   public:
-    DCCPacketQueue(void);
+    DCCPacketQueue(uint8_t length);
     
-    virtual void setup(byte);
-    
-    ~DCCPacketQueue(void)
+    virtual ~DCCPacketQueue(void)
     {
       free(queue);
     }
     
-    virtual inline bool isFull(void)
+    virtual bool isFull(void)
     {
       return (written == size);
     }
-    virtual inline bool isEmpty(void)
+    virtual bool isEmpty(void)
     {
       return (written == 0);
     }
-    virtual inline bool notEmpty(void)
+    virtual bool notEmpty(void)
     {
       return (written > 0);
     }
-    
-    virtual inline bool notRepeat(unsigned int address)
+    virtual bool notRepeat(unsigned int address)
     {
       return (address != queue[read_pos].getAddress());
     }
@@ -57,21 +55,20 @@ class DCCPacketQueue
 };
 
 //A queue that, when a packet is read, puts that packet back in the queue if it requires repeating.
-class DCCRepeatQueue: public DCCPacketQueue
+class DCCRepeatQueue : public DCCPacketQueue
 {
   public:
-    DCCRepeatQueue(void);
-    //void setup(byte length);
-    bool insertPacket(DCCPacket *packet);
-    bool readPacket(DCCPacket *packet);
+    DCCRepeatQueue(uint8_t length);
+    virtual bool insertPacket(DCCPacket *packet);
+    virtual bool readPacket(DCCPacket *packet);
 };
 
 //A queue that repeats the topmost packet as many times as is indicated by the packet before moving on
-class DCCEmergencyQueue: public DCCPacketQueue
+class DCCEmergencyQueue : public DCCPacketQueue
 {
   public:
-    DCCEmergencyQueue(void);
-    bool readPacket(DCCPacket *packet);
+    DCCEmergencyQueue(uint8_t length);
+    virtual bool readPacket(DCCPacket *packet);
 };
 
 #endif //__DCCPACKETQUEUE_H__

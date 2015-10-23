@@ -1,9 +1,7 @@
 #ifndef __DCCPACKET_H__
 #define __DCCPACKET_H__
 
-#include "Arduino.h"
-
-typedef unsigned char uint8_t;
+#include <inttypes.h>
 
 //Packet kinds
 // enum packet_kind_t {
@@ -17,21 +15,20 @@ typedef unsigned char uint8_t;
 //   other_packet_kind
 // };
 
-#define MULTIFUNCTION_PACKET_KIND_MASK 0x10
-#define idle_packet_kind            0x10
-#define e_stop_packet_kind          0x11
-#define speed_packet_kind           0x12
-#define function_packet_1_kind      0x13
-#define function_packet_2_kind      0x14
-#define function_packet_3_kind      0x15
-#define accessory_packet_kind       0x16
-#define reset_packet_kind           0x17
-#define ops_mode_programming_kind   0x18
+#define MULTIFUNCTION_PACKET_KIND_MASK  0x10
+#define idle_packet_kind                0x10
+#define e_stop_packet_kind              0x11
+#define speed_packet_kind               0x12
+#define function_packet_1_kind          0x13
+#define function_packet_2_kind          0x14
+#define function_packet_3_kind          0x15
+#define accessory_packet_kind           0x16
+#define reset_packet_kind               0x17
+#define ops_mode_programming_kind       0x18
 
-
-#define ACCESSORY_PACKET_KIND_MASK 0x40
-#define basic_accessory_packet_kind 0x40
-#define extended_accessory_packet_kind 0x41
+#define ACCESSORY_PACKET_KIND_MASK      0x40
+#define basic_accessory_packet_kind     0x40
+#define extended_accessory_packet_kind  0x41
 
 #define other_packet_kind           0x00
 
@@ -49,19 +46,19 @@ class DCCPacket
     uint8_t kind;
     
   public:
-    DCCPacket(uint16_t decoder_address=0xFF, uint8_t decoder_address_kind=0x00);
+    DCCPacket(uint16_t decoder_address = 0xFF, uint8_t decoder_address_kind = DCC_SHORT_ADDRESS);
     
     uint8_t getBitstream(uint8_t rawuint8_ts[]); //returns size of array.
     uint8_t getSize(void);
-    inline uint16_t getAddress(void) { return address; }
-    inline uint8_t getAddressKind(void) { return address_kind; }
-    inline void setAddress(uint16_t new_address) { address = new_address; }
-    inline void setAddress(uint16_t new_address, uint8_t new_address_kind) { address = new_address; address_kind = new_address_kind; }
-    void addData(uint8_t new_data[], uint8_t new_size); //insert freeform data.
-    inline void setKind(uint8_t new_kind) { kind = new_kind; }
-    inline uint8_t getKind(void) { return kind; }
-    inline void setRepeat(uint8_t new_repeat) { size_repeat = ((size_repeat&0xC0) | (new_repeat&0x3F)) ;}
-    inline uint8_t getRepeat(void) { return size_repeat & 0x3F; }//return repeat; }
+    uint16_t getAddress(void) { return address; }
+    uint8_t getAddressKind(void) { return address_kind; }
+    void setAddress(uint16_t new_address) { address = new_address; }
+    void setAddress(uint16_t new_address, uint8_t new_address_kind) { address = new_address; address_kind = new_address_kind; }
+    void addData(const uint8_t new_data[], uint8_t new_size); //insert freeform data.
+    void setKind(uint8_t new_kind) { kind = new_kind; }
+    uint8_t getKind(void) { return kind; }
+    void setRepeat(uint8_t new_repeat) { size_repeat = ((size_repeat & 0xC0) | (new_repeat & 0x3F)) ;}
+    uint8_t getRepeat(void) { return size_repeat & 0x3F; }//return repeat; }
 };
 
 #endif //__DCCPACKET_H__
