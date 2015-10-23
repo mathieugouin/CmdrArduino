@@ -11,7 +11,7 @@
 
 
 DCCPacketScheduler dps;
-byte prev_state = 1;
+bool prev_state = true;
 unsigned long timer = 0;
 unsigned int address = 4; //this address is not, strictly speaking, the accessory decoder address, but the address as it appears to the user
 
@@ -35,7 +35,7 @@ void loop() {
     {
       dps.unsetBasicAccessory((address >> 2) + 1, ((address - 1) & 0x03) << 1);
     }
-    prev_state = prev_state?0:1;
+    prev_state = !prev_state;
     timer = millis();
   }
   
