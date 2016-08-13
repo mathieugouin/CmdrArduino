@@ -8,6 +8,8 @@
 
 #include <DCCPacket.h>
 #include <DCCPacketQueue.h>
+// Enable this define to test the real ram used by the queues in the packet scheduler
+//#define DCC_PACKET_SCHEDULER_RAM_USED
 #include <DCCPacketScheduler.h>
 
 

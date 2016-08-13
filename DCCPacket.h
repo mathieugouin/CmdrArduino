@@ -57,7 +57,7 @@ class DCCPacket
     void addData(const uint8_t new_data[], uint8_t new_size); //insert freeform data.
     void setKind(uint8_t new_kind) { kind = new_kind; }
     uint8_t getKind(void) { return kind; }
-    void setRepeat(uint8_t new_repeat) { size_repeat = ((size_repeat & 0xC0) | (new_repeat & 0x3F)) ;}
+    void setRepeat(uint8_t new_repeat) { size_repeat = ((size_repeat & 0xC0) | (new_repeat & 0x3F)); }
     uint8_t getRepeat(void) { return size_repeat & 0x3F; }//return repeat; }
 };
 

@@ -86,7 +86,7 @@ uint8_t DCCPacket::getBitstream(uint8_t rawbytes[]) //returns size of array.
 
 uint8_t DCCPacket::getSize(void)
 {
-  return (size_repeat>>6);
+  return (size_repeat >> 6);
 }
 
 void DCCPacket::addData(const uint8_t new_data[], uint8_t new_size) //insert freeform data.

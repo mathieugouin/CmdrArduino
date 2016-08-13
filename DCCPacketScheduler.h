@@ -14,6 +14,7 @@
 #define REPEAT_INTERVAL               11
 #define PERIODIC_REFRESH_INTERVAL     23
 
+// Repeat count
 #define SPEED_REPEAT                  3
 #define FUNCTION_REPEAT               3
 #define E_STOP_REPEAT                 10
@@ -71,6 +72,17 @@ class DCCPacketScheduler
     DCCPacketQueue low_priority_queue;
     DCCRepeatQueue repeat_queue;
     //DCCTemporalQueue periodic_refresh_queue;
+    
+    // Used to test real RAM usage by the malloc of the packet queues
+    #ifdef DCC_PACKET_SCHEDULER_RAM_USED
+    DCCPacket ram_used_by_packet_queues[
+      E_STOP_QUEUE_SIZE + 
+      HIGH_PRIORITY_QUEUE_SIZE + 
+      LOW_PRIORITY_QUEUE_SIZE + 
+      REPEAT_QUEUE_SIZE /* +
+      PERIODIC_REFRESH_QUEUE_SIZE */
+    ];
+    #endif
     
     //TODO to be completed later.
     //DCC_Packet ops_programming_queue[10];

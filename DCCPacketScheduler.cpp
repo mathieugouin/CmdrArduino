@@ -53,15 +53,9 @@ DCCPacketScheduler::DCCPacketScheduler(void) :
   e_stop_queue(E_STOP_QUEUE_SIZE), 
   high_priority_queue(HIGH_PRIORITY_QUEUE_SIZE), 
   low_priority_queue(LOW_PRIORITY_QUEUE_SIZE), 
-  repeat_queue(REPEAT_QUEUE_SIZE)
+  repeat_queue(REPEAT_QUEUE_SIZE) /* ,
+  periodic_refresh_queue(PERIODIC_REFRESH_QUEUE_SIZE) */
 {
-  /*
-  e_stop_queue.setup(E_STOP_QUEUE_SIZE);
-  high_priority_queue.setup(HIGH_PRIORITY_QUEUE_SIZE);
-  low_priority_queue.setup(LOW_PRIORITY_QUEUE_SIZE);
-  repeat_queue.setup(REPEAT_QUEUE_SIZE);
-  */
-  //periodic_refresh_queue.setup(PERIODIC_REFRESH_QUEUE_SIZE);
 }
     
 //for configuration
@@ -76,7 +70,6 @@ void DCCPacketScheduler::setup(void) //for any post-constructor initialization
   
   //Following RP 9.2.4, begin by putting 20 reset packets and 10 idle packets on the rails.
   //use the e_stop_queue to do this, to ensure these packets go out first!
-
   
   DCCPacket p;
   uint8_t data[] = {0x00};
@@ -133,19 +126,21 @@ void DCCPacketScheduler::repeatPacket(DCCPacket *p)
 // valid non-estop speeds are in the range [1,127] / [-127,-1] with 1 = stop
 bool DCCPacketScheduler::setSpeed(uint16_t address, uint8_t address_kind, int8_t new_speed, uint8_t steps)
 {
-  uint8_t num_steps = steps;
   //steps = 0 means use the default; otherwise use the number of steps specified
-  if(!steps)
-    num_steps = default_speed_steps;
+  if (!steps)
+    steps = default_speed_steps;
         
-  switch(num_steps)
+  switch (steps)
   {
     case 14:
       return setSpeed14(address, address_kind, new_speed);
+      break;
     case 28:
       return setSpeed28(address, address_kind, new_speed);
+      break;
     case 128:
       return setSpeed128(address, address_kind, new_speed);
+      break;
   }
   return false; //invalid number of steps specified.
 }
@@ -228,20 +223,20 @@ bool DCCPacketScheduler::setSpeed128(uint16_t address, uint8_t address_kind, int
   uint8_t dir = 1;
   uint16_t abs_speed = new_speed;
   uint8_t speed_data_uint8_ts[] = {0x3F,0x00};
-  if(new_speed<0)
+  if (new_speed < 0)
   {
     dir = 0;
     abs_speed = new_speed * -1;
   }
-  if(!new_speed) //estop!
+  if (!new_speed) //estop!
     return eStop(address, address_kind);//speed_data_uint8_ts[0] |= 0x01; //estop
   else if (abs_speed == 1) //regular stop!
     speed_data_uint8_ts[1] = 0x00; //stop
   else //movement
     speed_data_uint8_ts[1] = abs_speed; //no conversion necessary.
 
-  speed_data_uint8_ts[1] |= (0x80*dir); //flip bit 7 to indicate direction;
-  p.addData(speed_data_uint8_ts,2);
+  speed_data_uint8_ts[1] |= (0x80 * dir); //flip bit 7 to indicate direction;
+  p.addData(speed_data_uint8_ts, sizeof(speed_data_uint8_ts));
   //Serial.print(speed_data_uint8_ts[0],BIN);
   //Serial.print(" ");
   //Serial.println(speed_data_uint8_ts[1],BIN);
@@ -258,9 +253,9 @@ bool DCCPacketScheduler::setSpeed128(uint16_t address, uint8_t address_kind, int
 bool DCCPacketScheduler::setFunctions(uint16_t address, uint8_t address_kind, uint16_t functions)
 {
 //  Serial.println(functions,HEX);
-  if(setFunctions0to4(address, address_kind, functions&0x1F))
-    if(setFunctions5to8(address, address_kind, (functions>>5)&0x0F))
-      if(setFunctions9to12(address, address_kind, (functions>>9)&0x0F))
+  if(setFunctions0to4(address, address_kind, functions & 0x1F))
+    if(setFunctions5to8(address, address_kind, (functions >> 5) & 0x0F))
+      if(setFunctions9to12(address, address_kind, (functions >> 9) & 0x0F))
         return true;
   return false;
 }
@@ -285,11 +280,11 @@ bool DCCPacketScheduler::setFunctions0to4(uint16_t address, uint8_t address_kind
   //by bit 0, but by bit 4. Really?
   
   //get functions 1,2,3,4
-  data[0] |= (functions>>1) & 0x0F;
+  data[0] |= (functions >> 1) & 0x0F;
   //get functions 0
-  data[0] |= (functions&0x01) << 4;
+  data[0] |= (functions & 0x01) << 4;
 
-  p.addData(data,1);
+  p.addData(data, 1);
   p.setKind(function_packet_1_kind);
   p.setRepeat(FUNCTION_REPEAT);
   return low_priority_queue.insertPacket(&p);

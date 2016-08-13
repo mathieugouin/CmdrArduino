@@ -7,7 +7,7 @@
 /** Given the structure of a DCC packet, the ISR can be in one of 5 states.
       *dos_idle: there is nothing to put on the rails. In this case, the only legal thing
                  to do is to put a '1' on the rails.  The ISR should almost never be in this state.
-      *dos_send_premable: A packet has been made available, and so we should broadcast the preamble: 14 '1's in a row
+      *dos_send_preamble: A packet has been made available, and so we should broadcast the preamble: 14 '1's in a row
       *dos_send_bstart: Each data uint8_t is preceded by a '0'
       *dos_send_uint8_t: Sending the current data uint8_t
       *dos_end_bit: After the final uint8_t is sent, send a '0'.
@@ -23,7 +23,8 @@ typedef enum  {
 DCC_output_state_t DCC_state = dos_idle; //just to start out
 
 /// The currently queued packet to be put on the rails. Default is a reset packet.
-uint8_t current_packet[6] = {0,0,0,0,0,0};
+// TBD MGouin: volatile ?
+/*volatile*/uint8_t current_packet[6] = {0,0,0,0,0,0};
 /// How many data uint8_ts in the queued packet?
 volatile uint8_t current_packet_size = 0;
 /// How many uint8_ts remain to be put on the rails?
@@ -61,19 +62,19 @@ volatile uint8_t current_bit_counter = 14; //init to 14 1's for the preamble
  9900us = (8*(1+OCR1A)) / (16MHz)
  9900us * 2MHz = 1+OCR1A
  OCR1A = 19799
- 
 */
 
-uint16_t one_count=115; //58us
-uint16_t zero_high_count=199; //100us
-uint16_t zero_low_count=199; //100us
+// TBD MGouin: define?
+uint16_t one_count = 115; //58us
+uint16_t zero_high_count = 199; //100us
+uint16_t zero_low_count = 199; //100us
 
 /// Setup phase: configure and enable timer1 CTC interrupt, set OC1A and OC1B to toggle on CTC
-void setup_DCC_waveform_generator() {
-  
- //Set the OC1A and OC1B pins (Timer1 output pins A and B) to output mode
- //On Arduino UNO, etc, OC1A is Port B/Pin 1 and OC1B Port B/Pin 2
- //On Arduino MEGA, etc, OC1A is or Port B/Pin 5 and OC1B Port B/Pin 6
+void setup_DCC_waveform_generator(void)
+{
+  //Set the OC1A and OC1B pins (Timer1 output pins A and B) to output mode
+  //On Arduino UNO, etc, OC1A is Port B/Pin 1 and OC1B Port B/Pin 2
+  //On Arduino MEGA, etc, OC1A is or Port B/Pin 5 and OC1B Port B/Pin 6
 #if defined(__AVR_ATmega1280__) || defined(__AVR_ATmega2560__) || defined(__AVR_AT90CAN128__) || defined(__AVR_AT90CAN64__) || defined(__AVR_AT90CAN32__)
   DDRB |= (1<<DDB5) | (1<<DDB6);
 #else
@@ -90,10 +91,9 @@ void setup_DCC_waveform_generator() {
     
   //finally, force a toggle on OC1B so that pin OC1B will always complement pin OC1A
   TCCR1C |= (1<<FOC1B);
-
 }
 
-void DCC_waveform_generation_hasshin()
+void DCC_waveform_generation_hasshin(void)
 {
   //enable the compare match interrupt
   TIMSK1 |= (1<<OCIE1A);
@@ -115,12 +115,11 @@ ISR(TIMER1_COMPA_vect)
 #else
   if(PINB & (1<<PINB1)) //if the pin is low, we need to use a different zero counter to enable streched-zero DC operation
 #endif
-
   {
     if(OCR1A == zero_high_count) //if the pin is low and outputting a zero, we need to be using zero_low_count
-      {
-        OCR1A = OCR1B = zero_low_count;
-      }
+    {
+      OCR1A = OCR1B = zero_low_count;
+    }
   }
   else //the pin is high. New cycle is begining. Here's where the real work goes.
   {
@@ -128,7 +127,7 @@ ISR(TIMER1_COMPA_vect)
      //if this is the last bit to send, queue up another packet (might be the idle packet).
     switch(DCC_state)
     {
-      /// Idle: Check if a new packet is ready. If it is, fall through to dos_send_premable. Otherwise just stick a '1' out there.
+      /// Idle: Check if a new packet is ready. If it is, fall through to dos_send_preamble. Otherwise just stick a '1' out there.
       case dos_idle:
         if(!current_uint8_t_counter) //if no new packet
         {
@@ -181,7 +180,7 @@ ISR(TIMER1_COMPA_vect)
           {
             DCC_state = dos_end_bit;
           }
-          else //there are more uint8_ts…so, go back to dos_send_bstart
+          else //there are more uint8_ts... so, go back to dos_send_bstart
           {
             DCC_state = dos_send_bstart;
           }
@@ -191,7 +190,7 @@ ISR(TIMER1_COMPA_vect)
       case dos_end_bit:
         OCR1A = OCR1B = one_count;
         DCC_state = dos_idle;
-        current_bit_counter = 14; //in preparation for a premable...
+        current_bit_counter = 14; //in preparation for a preamble...
 //        Serial.println(" 1");
         break;
     }
